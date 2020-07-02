@@ -82,7 +82,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Get a list of all open PR's in the target repo
         run: |
-          ./scripts/list_open_prs.sh ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
+          pip install requests
+          python ./scripts/list_open_prs.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
 
 
       #   uses: octokit/request-action@v2.x
