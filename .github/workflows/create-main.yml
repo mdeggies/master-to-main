@@ -78,22 +78,31 @@ jobs:
     name: Update the base branch for all open PR's
     runs-on: ubuntu-18.04
     steps:
-      - name: Get a list of all open PR's
-        uses: octokit/request-action@v2.x
-        id: get_open_prs
+      - name: Checkout target repo
+        uses: actions/checkout@master
         with:
-          # https://developer.github.com/v3/pulls/#list-pull-requests
-          route: GET /repos/:owner/:repo/pulls
-          owner: mdeggies
-          repo: github-private-actions
-          state: open
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: |
-          "echo list of open PR's: ${{ steps.get_open_prs.outputs.data[0].number }}"
-          echo ::set-env name=OPEN_PRS::$(echo ${{ steps.get_open_prs.outputs.data[0].number }})
-      # - name: Checkout current repo
-      #   uses: actions/checkout@test-workflow
-      - name: See if we can list the PR's from the previous job
+          repository: mdeggies/github-private-actions
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Get a list of all open PR's in the target repo
         run: |
-          ./scripts/list_open_prs.sh
+          ./scripts/list_open_prs.sh ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
+
+
+      #   uses: octokit/request-action@v2.x
+      #   id: get_open_prs
+      #   with:
+      #     # https://developer.github.com/v3/pulls/#list-pull-requests
+      #     route: GET /repos/:owner/:repo/pulls
+      #     owner: mdeggies
+      #     repo: github-private-actions
+      #     state: open
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      # - run: |
+      #     "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data).id }}"
+      #     echo ::set-env name=OPEN_PRS::$(echo ${{ steps.get_open_prs.outputs.data[0].number }})
+      # # - name: Checkout current repo
+      # #   uses: actions/checkout@test-workflow
+      # - name: See if we can list the PR's from the previous job
+      #   run: |
+      #     ./scripts/list_open_prs.sh
