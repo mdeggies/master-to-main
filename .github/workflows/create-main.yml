@@ -31,9 +31,10 @@ jobs:
               # Or simply overwrite main? 
           else
             echo "Main branch already exists.. skipping creation step"
+            echo ::set-env name=STATUS::$(echo ${{ steps.check_for_main.outputs.status }})
           fi
   create-main-branch:
-    if: ${{ steps.check_for_main.outputs.status }} != 200
+    if: $STATUS != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
