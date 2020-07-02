@@ -18,7 +18,6 @@ jobs:
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
-        run: echo "::set-output name=status::${{ success() }}"
       - name: Checkout main branch if it exists
         if: ${{ success() }}
         uses: actions/checkout@master
@@ -37,12 +36,12 @@ jobs:
             # Send slack alert -- main already exists but != master, so manually check it out
             # Or simply overwrite main? 
             exit 1
+          else
+            echo "Main exists and is equal to master.. skip create-main-branch job"
           fi
-    outputs:
-      main-exists: ${{ steps.check_for_main.outputs.status }}
   create-main-branch:
     needs: check-for-main
-    if: ${{fromJson(needs.check-for-main.outputs.matrix)}}
+    if: ${{fromJson(needs.check-for-main.outputs.status)}} != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
