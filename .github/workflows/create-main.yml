@@ -28,7 +28,7 @@ jobs:
       - name: Check if main == master
         if: ${{ success() }}
         run: |
-          if ! git diff-index --quiet master;
+          if ! git diff-index --quiet origin/master;
           then
             echo "Main isn't equal to master.."
             # Send slack alert -- main already exists but != master, so manually check it out
