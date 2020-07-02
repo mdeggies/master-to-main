@@ -24,6 +24,7 @@ jobs:
         with:
           repository: mdeggies/github-private-actions
           token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
           ref: 'main'
       - name: Check if main == master
         if: ${{ success() }}
