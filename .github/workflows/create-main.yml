@@ -78,11 +78,6 @@ jobs:
     name: Update the base branch for all open PR's
     runs-on: ubuntu-18.04
     steps:
-      - name: Checkout target repo
-        uses: actions/checkout@master
-        with:
-          repository: mdeggies/github-private-actions
-          token: ${{ secrets.GH_TOKEN }}
       - name: Get a list of all open PR's in the target repo
         run: |
           ./scripts/list_open_prs.sh ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
