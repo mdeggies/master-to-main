@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
       - name: Checkout main branch if it exists
         if: ${{ success() }}
-        uses: actions/checkout@main
+        uses: actions/checkout
         with:
           repository: mdeggies/github-private-actions
           token: ${{ secrets.GH_TOKEN }}
