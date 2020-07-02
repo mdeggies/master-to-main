@@ -18,11 +18,20 @@ jobs:
       - name: Create the main branch
         run: |
           git branch -m master main
-      # - name: Push main branch
-      #   uses: ad-m/github-push-action@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     repository: mdeggies/github-private-actions
       - name: Push main branch
         run: |
           git push -u origin main
+  update-default-branch:
+    name: Update the default branch to main
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: update_default_branch
+        with:
+          route: PATCH /repos/:owner/:repo
+          repository: mdeggies/github-private-actions
+          default_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: "echo status: ${{ steps.update_default_branch.outputs.data }}"
+        
