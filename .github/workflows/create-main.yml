@@ -29,7 +29,8 @@ jobs:
         id: update_default_branch
         with:
           route: PATCH /repos/:owner/:repo
-          repository: mdeggies/github-private-actions
+          owner: mdeggies
+          repo: github-private-actions
           default_branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
