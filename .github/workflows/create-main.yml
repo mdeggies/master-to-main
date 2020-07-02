@@ -28,7 +28,6 @@ jobs:
       - name: Check if main == master
         if: ${{ success() }}
         run: |
-          git checkout main
           if ! git diff-index --quiet master;
           then
             echo "Main isn't equal to master.."
