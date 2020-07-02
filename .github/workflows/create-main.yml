@@ -4,10 +4,10 @@ on:
       - 'test-workflow'
 jobs:
   check-for-main:
-    name: Check to see if main branch already exists
+    name: Check if main branch exists
     runs-on: ubuntu-18.04
     steps:
-      - name: Check to see if main branch exists
+      - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
         with:
@@ -53,14 +53,14 @@ jobs:
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: 'master'
-      - name: Create the main branch
+      - name: Create main branch
         run: |
           git branch -m master main
       - name: Push main branch
         run: |
           git push -u origin main
   update-default-branch:
-    name: Update the default branch to main
+    name: Update default branch to main
     runs-on: ubuntu-18.04
     steps:
       - name: Update the default branch to main
@@ -80,7 +80,7 @@ jobs:
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v2
-      - name: Get a list of all open PR's in the target repo
+      - name: Update target branch of open PR's from 'master' to 'main'
         run: |
-          pip install PyGithub requests
+          # pip install PyGithub requests
           python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
