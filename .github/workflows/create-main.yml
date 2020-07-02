@@ -18,6 +18,7 @@ jobs:
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
+        run: echo "::set-output name=status::${{ success() }}"
       - name: Checkout main branch if it exists
         if: ${{ success() }}
         uses: actions/checkout@master
@@ -37,9 +38,11 @@ jobs:
             # Or simply overwrite main? 
             exit 1
           fi
+    outputs:
+      main-exists: ${{ steps.check_for_main.outputs.status }}
   create-main-branch:
-    if: ${{ success() }}
     needs: check-for-main
+    if: ${{fromJson(needs.check-for-main.outputs.matrix)}}
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
