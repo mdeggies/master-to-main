@@ -18,6 +18,13 @@ jobs:
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
+      - name: Checkout main branch if it exists
+        if: ${{ success() }}
+        uses: actions/checkout@main
+        with:
+          repository: mdeggies/github-private-actions
+          token: ${{ secrets.GH_TOKEN }}
+          ref: 'main'
       - name: Check if main == master
         if: ${{ success() }}
         run: |
@@ -31,6 +38,7 @@ jobs:
           fi
   create-main-branch:
     if: ${{ success() }}
+    needs: check-for-main
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
