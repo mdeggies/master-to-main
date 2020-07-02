@@ -60,7 +60,6 @@ jobs:
         run: |
           git push -u origin main
   update-default-branch:
-    needs: create-main-branch
     name: Update the default branch to main
     runs-on: ubuntu-18.04
     steps:
