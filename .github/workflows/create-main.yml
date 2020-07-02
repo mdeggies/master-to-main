@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
       - name: Checkout main branch if it exists
         if: ${{ success() }}
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
         with:
           repository: mdeggies/github-private-actions
           token: ${{ secrets.GH_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout master with all history on the target repo
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
         with:
           repository: mdeggies/github-private-actions
           token: ${{ secrets.GH_TOKEN }}
@@ -78,6 +78,8 @@ jobs:
     name: Update the base branch for all open PR's
     runs-on: ubuntu-18.04
     steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v2
       - name: Get a list of all open PR's in the target repo
         run: |
           ./scripts/list_open_prs.sh ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
