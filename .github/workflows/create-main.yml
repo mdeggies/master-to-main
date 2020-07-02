@@ -1,0 +1,28 @@
+on:
+  push:
+    branches:
+      - test-workflow
+jobs:
+  create-main-branch:
+    name: Create main branch in target repo
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout master with all history on the target repo
+        uses: actions/checkout@master
+        with:
+          repository: mdeggies/github-private-actions
+          # token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: 'master'
+      - name: Create the main branch
+        run: |
+          git branch -m master main
+      # - name: Push main branch
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     repository: mdeggies/github-private-actions
+      - name: Push main branch
+        run: |
+          git push -u origin main
