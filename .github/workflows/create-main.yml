@@ -83,4 +83,4 @@ jobs:
       - name: Get a list of all open PR's in the target repo
         run: |
           pip install PyGithub requests
-          python ./scripts/list_open_prs.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
+          python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
