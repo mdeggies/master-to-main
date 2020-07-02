@@ -33,7 +33,7 @@ jobs:
             echo "Main branch already exists.. skipping creation step"
           fi
   create-main-branch:
-    if: steps.check_for_main.outputs.status != 200
+    if: ${{ steps.check_for_main.outputs.status }} != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
