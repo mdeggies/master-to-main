@@ -22,10 +22,12 @@ jobs:
         run: |
           git push -u origin main
   update-default-branch:
+    needs: create-main-branch
     name: Update the default branch to main
     runs-on: ubuntu-18.04
     steps:
-      - uses: octokit/request-action@v2.x
+      - name: Update the default branch to main
+        uses: octokit/request-action@v2.x
         id: update_default_branch
         with:
           route: PATCH /repos/:owner/:repo
@@ -34,5 +36,26 @@ jobs:
           default_branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      - run: "echo status: ${{ steps.update_default_branch.outputs.data }}"
-        
+  update-pr-target:
+    needs: update-default-branch
+    name: Update the base branch for all open PR's
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Get a list of all open PR's
+        uses: octokit/request-action@v2.x
+        id: get_open_prs
+        with:
+          # https://developer.github.com/v3/pulls/#list-pull-requests
+          route: GET /repos/:owner/:repo/pulls
+          owner: mdeggies
+          repo: github-private-actions
+          state: open
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - run: |
+          "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data.number) }}"
+          echo ::set-env name=OPEN_PRS::$(echo ${{ fromJson(steps.get_open_prs.outputs.data.number) }})
+      - name: See if we can list the PR's from the previous job
+        uses: actions/checkout@test-workflow
+        run: |
+          ./scripts/list_open_prs.sh

@@ -1,0 +1,1 @@
+echo $OPEN_PRS
