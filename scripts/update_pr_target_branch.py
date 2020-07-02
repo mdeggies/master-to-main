@@ -1,4 +1,4 @@
-import sys, requests.exceptions
+import sys
 from requests import get, post
 from github import Github
 from json import dumps
