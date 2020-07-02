@@ -54,11 +54,9 @@ jobs:
           fetch-depth: 0
           ref: 'master'
       - name: Create main branch
-        run: |
-          git branch -m master main
+        run: git branch -m master main
       - name: Push main branch
-        run: |
-          git push -u origin main
+        run: git push -u origin main
   update-default-branch:
     name: Update default branch to main
     runs-on: ubuntu-18.04
@@ -80,7 +78,7 @@ jobs:
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install requests PyGithub
       - name: Update target branch of open PR's from 'master' to 'main'
-        run: |
-          pip install requests PyGithub
-          python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
+        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
