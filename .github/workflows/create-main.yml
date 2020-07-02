@@ -82,25 +82,5 @@ jobs:
         uses: actions/checkout@v2
       - name: Get a list of all open PR's in the target repo
         run: |
-          pip install requests
+          pip install PyGithub requests
           python ./scripts/list_open_prs.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
-
-
-      #   uses: octokit/request-action@v2.x
-      #   id: get_open_prs
-      #   with:
-      #     # https://developer.github.com/v3/pulls/#list-pull-requests
-      #     route: GET /repos/:owner/:repo/pulls
-      #     owner: mdeggies
-      #     repo: github-private-actions
-      #     state: open
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      # - run: |
-      #     "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data).id }}"
-      #     echo ::set-env name=OPEN_PRS::$(echo ${{ steps.get_open_prs.outputs.data[0].number }})
-      # # - name: Checkout current repo
-      # #   uses: actions/checkout@test-workflow
-      # - name: See if we can list the PR's from the previous job
-      #   run: |
-      #     ./scripts/list_open_prs.sh
