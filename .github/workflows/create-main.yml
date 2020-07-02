@@ -24,6 +24,7 @@ jobs:
         with:
           repository: mdeggies/github-private-actions
           token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: 'main'
       - name: Check if main == master
@@ -88,8 +89,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: |
-          "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data).number }}"
-          echo ::set-env name=OPEN_PRS::$(echo ${{ fromJson(steps.get_open_prs.outputs.data).number }})
+          "echo list of open PR's: ${{ steps.get_open_prs.outputs.data.number }}"
+          echo ::set-env name=OPEN_PRS::$(echo ${{ steps.get_open_prs.outputs.data.number }})
       # - name: Checkout current repo
       #   uses: actions/checkout@test-workflow
       - name: See if we can list the PR's from the previous job
