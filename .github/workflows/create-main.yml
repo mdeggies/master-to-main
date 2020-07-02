@@ -3,7 +3,37 @@ on:
     branches:
       - 'test-workflow'
 jobs:
+  check-for-main:
+    name: Check to see if main branch already exists
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check to see if main branch exists
+        uses: octokit/request-action@v2.x
+        id: check_for_main
+        with:
+          # https://developer.github.com/v3/repos/branches/#get-a-branch
+          route: GET /repos/:owner/:repo/branches/:branch
+          owner: mdeggies
+          repo: github-private-actions
+          branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
+      - name: Check if main == master
+        run: |
+          echo "Status: $(steps.check_for_main.outputs.status)"
+          if [ $(steps.check_for_main.outputs.status == 200 ];
+          then 
+            git checkout main
+            if ! git diff-index --quiet master;
+            then
+              echo "Main isn't equal to master.."
+              # Send slack alert -- main already exists but != master, so manually check it out
+              # Or simply overwrite main? 
+          else
+            echo "Main branch already exists.. skipping creation step"
+          fi
   create-main-branch:
+    if: steps.check_for_main.outputs.status != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     steps:
@@ -53,7 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       - run: |
-          "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data).number }}
+          "echo list of open PR's: ${{ fromJson(steps.get_open_prs.outputs.data).number }}"
           echo ::set-env name=OPEN_PRS::$(echo ${{ fromJson(steps.get_open_prs.outputs.data).number }})
       # - name: Checkout current repo
       #   uses: actions/checkout@test-workflow
