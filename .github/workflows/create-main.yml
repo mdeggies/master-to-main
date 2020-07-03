@@ -57,10 +57,10 @@ jobs:
             echo "Main exists and is equal to master.. skip create-main-branch job"
           fi
   create-main-branch:
-    needs: [check-for-main, get-branch-name]
     if: ${{fromJson(needs.check-for-main.outputs.status)}} != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
+    needs: [check-for-main, get-branch-name]
     steps:
       - name: Checkout master with all history on the target repo
         uses: actions/checkout@v2
@@ -77,6 +77,7 @@ jobs:
   update-default-branch:
     name: Update default branch to main
     runs-on: ubuntu-18.04
+    needs: get-branch-name
     steps:
       - name: Update the default branch to main
         uses: octokit/request-action@v2.x
@@ -89,9 +90,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   update-pr-target:
-    needs: [get-branch-name, update-default-branch]
     name: Update the base branch for all open PR's
     runs-on: ubuntu-18.04
+    needs: [get-branch-name, update-default-branch]
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v2
