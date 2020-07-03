@@ -7,13 +7,15 @@ jobs:
     name: Read properties file with inputs
     runs-on: ubuntu-18.04
     steps:
-      - name: Read properties.txt
-        id: properties
-        uses: juliangruber/read-file-action@v1
+      - name: Checkout current repo
+        uses: actions/checkout@v1
+      - name: Read properties.json
+        id: read_file
+        uses: andstor/file-reader-action@v1
         with:
-          path: ./properties.txt
-  - name: Echo properties.txt
-    run: echo ${{ steps.properties.outputs.content }}
+          path: "package.json"
+      - name: File contents
+        run: echo "${ steps.read_file.outputs.contents }"
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
