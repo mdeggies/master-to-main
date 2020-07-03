@@ -1,14 +1,22 @@
 on:
   push:
     branches:
-      - 'test-workflow'
+      - 'mdeggies/github-private-actions'
 jobs:
+  get-branch-name:
+    name: Get current branch name
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Get current branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: current_branch
+      - name: Echo branch name
+        run: echo ${{ steps.current_branch.outputs.branch }}
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
     steps:
-      - name: Get current branch name
-        run: echo "${{ github.head_ref }}"
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
