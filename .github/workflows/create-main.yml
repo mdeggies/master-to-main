@@ -74,29 +74,82 @@ jobs:
         run: git branch -m master main
       - name: Push main branch
         run: git push -u origin main
-  update-default-branch:
-    name: Update default branch to main
+
+
+  update-ci-config:
+    name: Update CI config
     runs-on: ubuntu-18.04
     needs: get-branch-name
     steps:
-      - name: Update the default branch to main
-        uses: octokit/request-action@v2.x
-        id: update_default_branch
-        with:
-          route: PATCH /repos/:owner/:repo
-          owner: ${{ needs.get-branch-name.outputs.owner }}
-          repo: ${{ needs.get-branch-name.outputs.repo }}
-          default_branch: main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  update-pr-target:
-    name: Update the base branch for all open PR's
-    runs-on: ubuntu-18.04
-    needs: [get-branch-name, update-default-branch]
-    steps:
-      - name: Checkout current repo
+      - name: Checkout main branch with all history
         uses: actions/checkout@v2
-      - name: Install dependencies
-        run: pip install requests PyGithub
-      - name: Update target branch of open PR's from 'master' to 'main'
-        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }}
+        with:
+          repository: ${{ needs.get-branch-name.outputs.branch }}
+          token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: 'main'
+      - name: Replace 'master' with 'main' in the .circleci dir
+        run: |
+          if [ -d "./.circleci" ];
+          then
+            grep -lR --include \*.yml "master" ./.circleci | xargs sed -i 's/master/main/g'
+          else
+            echo "No ./.circleci directory exists, so no changes required."
+          fi
+      - name: Replace 'master' with 'main' in .travis.yml
+        run: |
+          if [ -f ".travis.yml" ];
+          then
+            grep -lR --include \*.yml "master" .travis.yml | xargs sed -i 's/master/main/g'
+          else 
+            echo "No .travis.yml file exists, so no changes required."
+          fi
+      - name: Replace 'master' with 'main' in ./.github
+        run: | 
+          if [ -d "./.github" ];
+          then
+            grep -lR --include \*.yml "master" ./.github | xargs sed -i 's/master/main/g'
+          else
+            echo "No ./.github directory exists, so no changes required."
+          fi
+      - name: Replace 'master' with 'main' in ./.teamcity
+        run: | 
+          if [ -d "./.teamcity" ];
+          then
+            grep -lR --include \*.yml "master" ./.teamcity | xargs sed -i 's/master/main/g'
+          else
+            echo "No ./.teamcity directory exists, so no changes required."
+          fi
+      - name: Add, commit, and push changes
+        run: |
+          git add .
+          git commit -m "Updating CI references to master"
+          git checkout -b update-ci-references
+          git push origin update-ci-references
+  # update-default-branch:
+  #   name: Update default branch to main
+  #   runs-on: ubuntu-18.04
+  #   needs: get-branch-name
+  #   steps:
+  #     - name: Update the default branch to main
+  #       uses: octokit/request-action@v2.x
+  #       id: update_default_branch
+  #       with:
+  #         route: PATCH /repos/:owner/:repo
+  #         owner: ${{ needs.get-branch-name.outputs.owner }}
+  #         repo: ${{ needs.get-branch-name.outputs.repo }}
+  #         default_branch: main
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  # update-pr-target:
+  #   name: Update the base branch for all open PR's
+  #   runs-on: ubuntu-18.04
+  #   needs: [get-branch-name, update-default-branch]
+  #   steps:
+  #     - name: Checkout current repo
+  #       uses: actions/checkout@v2
+  #     - name: Install dependencies
+  #       run: pip install requests PyGithub
+  #     - name: Update target branch of open PR's from 'master' to 'main'
+  #       run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }}
