@@ -57,7 +57,7 @@ jobs:
             echo "Main exists and is equal to master.. skip create-main-branch job"
           fi
   create-main-branch:
-    if: ${{fromJson(needs.check-for-main.outputs.status)}} != 200
+    if: ${{ needs.check-for-main.outputs.status }} != 200
     name: Create main branch in target repo
     runs-on: ubuntu-18.04
     needs: [check-for-main, get-branch-name]
