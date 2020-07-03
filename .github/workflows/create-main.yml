@@ -7,7 +7,7 @@ jobs:
     name: Get current branch name
     runs-on: ubuntu-18.04
     outputs:
-      branch: ${{ steps.current_branch_owner.outputs.branch }}
+      branch: ${{ steps.current_branch.outputs.branch }}
       owner: ${{ steps.current_branch_owner.outputs.owner }}
       repo: ${{ steps.current_branch_repo.outputs.repo }}
     steps:
