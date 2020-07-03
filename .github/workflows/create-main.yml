@@ -3,25 +3,12 @@ on:
     branches:
       - 'test-workflow'
 jobs:
-  read-properties-file:
-    name: Read properties file with inputs
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout current repo
-        uses: actions/checkout@v1
-      - name: Read properties.json
-        id: read_file
-        uses: juliangruber/read-file-action@v1
-        with:
-          path: ./properties.json
-      - name: File contents
-        run: echo "${{fromJson(steps.read_file.outputs.contents.owner)}}"
-      - name: File contents2
-        run: echo "${{fromJson(steps.read_file.outputs.contents).owner}}"
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
     steps:
+      - name: Get current branch name
+        run: echo "${{ github.head_ref }}"
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
