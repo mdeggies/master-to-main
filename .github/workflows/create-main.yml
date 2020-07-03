@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - 'mdeggies/github-private-actions'
+      - '*/*'
 jobs:
   get-branch-name:
     name: Get current branch name
@@ -15,26 +15,20 @@ jobs:
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
     - id: current_branch_owner
       run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
-      # run: echo ${{ steps.current_branch.outputs.branch }}
     - id: current_branch_repo
       run: echo "##[set-output name=repo;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $2}')"
-      # run: echo ${{ steps.current_branch.outputs.branch }}
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
-    needs: get-branch-name
     steps:
-      - run: echo ${{needs.get-branch-name.outputs.current_branch}}
-      - run: echo ${{needs.get-branch-name.outputs.owner}}
-      - run: echo ${{needs.get-branch-name.outputs.repo}}
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
         with:
           # https://developer.github.com/v3/repos/branches/#get-a-branch
           route: GET /repos/:owner/:repo/branches/:branch
-          owner: mdeggies
-          repo: github-private-actions
+          owner: ${{ steps.get-branch-name.outputs.owner }}
+          repo: ${{ steps.get-branch-name.outputs.repo }}
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
@@ -42,7 +36,7 @@ jobs:
         if: ${{ success() }}
         uses: actions/checkout@v2
         with:
-          repository: mdeggies/github-private-actions
+          repository: ${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -68,7 +62,7 @@ jobs:
       - name: Checkout master with all history on the target repo
         uses: actions/checkout@v2
         with:
-          repository: mdeggies/github-private-actions
+          repository: ${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -86,8 +80,8 @@ jobs:
         id: update_default_branch
         with:
           route: PATCH /repos/:owner/:repo
-          owner: mdeggies
-          repo: github-private-actions
+          owner: ${{ steps.get-branch-name.outputs.owner }}
+          repo: ${{ steps.get-branch-name.outputs.repo }}
           default_branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -101,4 +95,4 @@ jobs:
       - name: Install dependencies
         run: pip install requests PyGithub
       - name: Update target branch of open PR's from 'master' to 'main'
-        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} mdeggies github-private-actions
+        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ steps.get-branch-name.outputs.owner }} ${{ steps.get-branch-name.outputs.repo }}
