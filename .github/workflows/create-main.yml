@@ -15,7 +15,9 @@ jobs:
         with:
           path: ./properties.json
       - name: File contents
-        run: echo "${{ steps.read_file.outputs.contents.owner }}"
+        run: echo "${{fromJson(steps.read_file.outputs.contents.owner)}}"
+      - name: File contents2
+        run: echo "${{fromJson(steps.read_file.outputs.contents).owner}}"
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
