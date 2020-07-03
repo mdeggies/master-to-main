@@ -3,6 +3,17 @@ on:
     branches:
       - 'test-workflow'
 jobs:
+  read-properties-file:
+    name: Read properties file with inputs
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Read properties.txt
+        id: properties
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./properties.txt
+  - name: Echo properties.txt
+    run: echo ${{ steps.properties.outputs.content }}
   check-for-main:
     name: Check if main branch exists
     runs-on: ubuntu-18.04
