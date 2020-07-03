@@ -14,10 +14,10 @@ jobs:
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
     - id: current_branch_owner
-      run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}'})"
+      run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
       # run: echo ${{ steps.current_branch.outputs.branch }}
     - id: current_branch_repo
-      run: echo "##[set-output name=repo;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $2}'})"
+      run: echo "##[set-output name=repo;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $2}')"
       # run: echo ${{ steps.current_branch.outputs.branch }}
   check-for-main:
     name: Check if main branch exists
