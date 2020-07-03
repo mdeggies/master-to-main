@@ -7,6 +7,7 @@ jobs:
     name: Get current branch name
     runs-on: ubuntu-18.04
     outputs:
+      branch: ${{ steps.current_branch_owner.outputs.branch }}
       owner: ${{ steps.current_branch_owner.outputs.owner }}
       repo: ${{ steps.current_branch_repo.outputs.repo }}
     steps:
@@ -22,6 +23,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: get-branch-name
     steps:
+      - run: echo ${{ steps.current_branch_repo.outputs.repo }}
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
