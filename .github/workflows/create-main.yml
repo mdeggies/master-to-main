@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: get-branch-name
     steps:
-      - run: ${{ needs.get-branch-name.outputs.repo }}
+      # - run: ${{ needs.get-branch-name.outputs.repo }}
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
