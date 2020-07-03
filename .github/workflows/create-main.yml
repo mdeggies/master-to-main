@@ -23,15 +23,15 @@ jobs:
     runs-on: ubuntu-18.04
     needs: get-branch-name
     steps:
-      - run: echo ${{ steps.current_branch_repo.outputs.repo }}
+      - run: echo ${{ needs.get-branch-name.outputs.repo }}
       - name: Check if main branch exists
         uses: octokit/request-action@v2.x
         id: check_for_main
         with:
           # https://developer.github.com/v3/repos/branches/#get-a-branch
           route: GET /repos/:owner/:repo/branches/:branch
-          owner: ${{ steps.get-branch-name.outputs.owner }}
-          repo: ${{ steps.get-branch-name.outputs.repo }}
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
@@ -39,7 +39,7 @@ jobs:
         if: ${{ success() }}
         uses: actions/checkout@v2
         with:
-          repository: ${{ steps.get-branch-name.outputs.branch }}
+          repository: ${{ needs.get-branch-name.outputs.branch }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -65,7 +65,7 @@ jobs:
       - name: Checkout master with all history on the target repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ steps.get-branch-name.outputs.branch }}
+          repository: ${{ needs.get-branch-name.outputs.branch }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -83,8 +83,8 @@ jobs:
         id: update_default_branch
         with:
           route: PATCH /repos/:owner/:repo
-          owner: ${{ steps.get-branch-name.outputs.owner }}
-          repo: ${{ steps.get-branch-name.outputs.repo }}
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
           default_branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -98,4 +98,4 @@ jobs:
       - name: Install dependencies
         run: pip install requests PyGithub
       - name: Update target branch of open PR's from 'master' to 'main'
-        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ steps.get-branch-name.outputs.owner }} ${{ steps.get-branch-name.outputs.repo }}
+        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }}
