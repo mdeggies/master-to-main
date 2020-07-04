@@ -9,7 +9,7 @@ jobs:
     steps:
       - run: echo "TARGET REPO IS ${{ github.event.client_payload.target-repo }}"
       - run: echo "TARGET BRANCH IS ${{ github.event.client_payload.target-branch }}"
-      - name: Checkout main branch with all historyeds.get-branch-name.outputs.target-branch
+      - name: Checkout main ${{ github.event.client_payload.target-branch }} with all history
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.client_payload.target-repo }}

@@ -94,4 +94,6 @@ jobs:
           repository: mdeggies/master-to-main
           event-type: trigger-update-ci-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "target_repo": "${{ needs.get-branch-name.outputs.target-repo }}", "target_branch": "${{ needs.get-branch-name.outputs.target-branch }}", "owner": "${{ needs.get-branch-name.outputs.owner }}", "repo": "${{ needs.get-branch-name.outputs.repo }}"   }'
-  
+      - run: echo ${{ github.event.client_payload.sha }}
+      - run: echo ${{ github.event.client_payload.target_repo }}
+      - run: echo ${{ github.event.client_payload.owner }}
