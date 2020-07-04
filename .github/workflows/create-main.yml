@@ -139,7 +139,7 @@ jobs:
           else
             echo "No ./.teamcity directory exists, so no changes required."
           fi
-      - name: Add, commit, and push changes
+      - name: Add, commit, and force push changes
         run: |
           if [[ $main_checkout_status == "success" && $edit ]];
           then
@@ -149,7 +149,7 @@ jobs:
             git add .
             git commit -m "Updating CI references to master"
             git checkout -b update-ci-references
-            git push origin update-ci-references
+            git push origin update-ci-references -f
           fi 
       - name: Create PR on success 
         uses: octokit/request-action@v2.x
