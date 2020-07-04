@@ -96,43 +96,57 @@ jobs:
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: ${{ needs.get-branch-name.outputs.target-branch }}
+      - run: |
+          if ${{ success() }};
+          then
+            echo "::set-env name=main_checkout_status::success"
+          fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in the .circleci dir
+        if: $main_checkout_status == "success"
         run: |
           if [ -d "./.circleci" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.circleci/*.yml"
             grep -lR --include \*.yml "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
           else
             echo "No ./.circleci directory exists, so no changes required."
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml
+        if: $main_checkout_status == "success"
         run: |
           if [ -f ".travis.yml" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml"
             grep -lR --include \*.yml "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
           else 
             echo "No .travis.yml file exists, so no changes required."
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github
+        if: $main_checkout_status == "success"
         run: | 
           if [ -d "./.github" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github/*.yml"
             grep -lR --include \*.yml "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
           else
             echo "No ./.github directory exists, so no changes required."
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity
+        if: $main_checkout_status == "success"
         run: | 
           if [ -d "./.teamcity" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity/*.yml"
             grep -lR --include \*.yml "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
           else
             echo "No ./.teamcity directory exists, so no changes required."
           fi
       - name: Add, commit, and push changes
+        if: $main_checkout_status == "success" && $edit
         run: |
           git add .
           git commit -m "Updating CI references to master"
