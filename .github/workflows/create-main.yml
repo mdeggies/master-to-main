@@ -141,7 +141,7 @@ jobs:
           fi
       - name: Add, commit, and push changes
         run: |
-          if [ $main_checkout_status == "success" && $edit ];
+          if [[ $main_checkout_status == "success" && $edit ]];
           then
             echo "Adding, committing, and pushing changes to branch 'update-ci-references'"
             git add .
