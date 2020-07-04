@@ -6,16 +6,17 @@ from logging import basicConfig, info, error, DEBUG
 
 def validate_inputs():
     # Returns a dict of inputs needed to make requests to GitHub
-    if len(argv) == 4:
+    if len(argv) == 5:
         token = argv[1]
         owner = argv[2]
         repo = argv[3]
+        target = argv[4]
         repo_url = 'https://github.com/{}/{}'.format(owner, repo)
         api_url = 'https://api.github.com/repos/{}/{}'.format(owner, repo)
     else:
         error('Error: This script requires three inputs, GITHUB_TOKEN, OWNER, and REPO, but only %d were provided').format(len(argv)-1)
         exit(1)
-    return { 'token': token, 'owner': owner, 'repo': repo }
+    return { 'token': token, 'owner': owner, 'repo': repo, 'target': target }
 
 def get_open_prs(input):
     # Returns the first page of open PR's for the target repo
@@ -57,13 +58,13 @@ def get_pr_numbers(resp):
     return numbers
 
 def update_pr_target_branch(input, numbers):
-    # Update the target branch on open PR's from 'master' to 'main'
+    # Update the target branch on open PR's from 'master' to target [e.g. 'main']
     # https://developer.github.com/v3/pulls/#update-a-pull-request
     pr_url = '{}/pull'.format(input['repo_url'])
     for pr_number in numbers:
         try:
             url = '{}/pulls/{}'.format(input['api_url'], pr_number)
-            payload = { 'base': 'main' }
+            payload = { 'base': input['target'] }
             headers = { 'Authorization': 'token {}'.format(input['token']), 'Accept': 'application/vnd.github.v3+json' }
             res = post(url,data=dumps(payload),headers=headers)
             res.raise_for_status()
