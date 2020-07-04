@@ -96,12 +96,12 @@ jobs:
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: ${{ needs.get-branch-name.outputs.target-branch }}
-      - name: Did checkokut succeed?
+      - name: Did checkout succeed?
         if: ${{ success() }}
         run: echo "::set-env name=main_checkout_status::success"
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in the .circleci dir
         run: |
-          if [ $main_checkout_status == "success" && -d "./.circleci" ];
+          if [[ $main_checkout_status == "success" && -d "./.circleci" ]];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.circleci/*.yml"
             grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
@@ -111,7 +111,7 @@ jobs:
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml
         run: |
-          if [ $main_checkout_status == "success" && -f ".travis.yml" ];
+          if [[ $main_checkout_status == "success" && -f ".travis.yml" ]];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml"
             grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
@@ -121,7 +121,7 @@ jobs:
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github
         run: | 
-          if [ $main_checkout_status == "success" && -d "./.github" ];
+          if [[ $main_checkout_status == "success" && -d "./.github" ]];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github/*.yml"
             grep -lR "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
@@ -131,7 +131,7 @@ jobs:
           fi
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity
         run: | 
-          if [ $main_checkout_status == "success" &&  -d "./.teamcity" ];
+          if [[ $main_checkout_status == "success" &&  -d "./.teamcity" ]];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity/*.yml"
             grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
