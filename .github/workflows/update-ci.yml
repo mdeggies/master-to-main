@@ -3,7 +3,11 @@ on:
     types: [trigger-update-ci-workflow]
 
 jobs:
-   update-ci-config:
+  prepare-to-update-ci:
+    runs-on: ubuntu-18.04
+    steps:
+      - run: echo 'Preparing to update CI'
+  update-ci-config:
     name: Update CI config
     runs-on: ubuntu-18.04
     needs: get-branch-name
