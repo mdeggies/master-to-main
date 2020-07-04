@@ -7,55 +7,55 @@ jobs:
     name: Update CI config
     runs-on: ubuntu-18.04
     steps:
-      - run: echo "TARGET REPO IS ${{ github.event.client_payload.release_url.target-repo }}"
-      - run: echo "TARGET BRANCH IS ${{ github.event.client_payload.release_url.target-branch }}"
+      - run: echo "TARGET REPO IS ${{ github.event.client_payload.target-repo }}"
+      - run: echo "TARGET BRANCH IS ${{ github.event.client_payload.target-branch }}"
       - name: Checkout main branch with all historyeds.get-branch-name.outputs.target-branch
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.get-branch-name.outputs.target-repo }}
+          repository: ${{ github.event.client_payload.target-repo }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
-          ref: ${{ needs.get-branch-name.outputs.target-branch }}
+          ref: ${{ github.event.client_payload.target-branch }}
       - name: Did checkout succeed?
         if: ${{ success() }}
         run: echo "::set-env name=main_checkout_status::success"
-      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in the .circleci dir
+      - name: Replace 'master' with ${{ github.event.client_payload.target-branch }} in the .circleci dir
         run: |
           if [[ $main_checkout_status == "success" && -d "./.circleci" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.circleci/*.yml"
-            grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "Attempting to replace 'master' with ${{ github.event.client_payload.target-branch }} in ./.circleci/*.yml"
+            grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ github.event.client_payload.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.circleci directory exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml
+      - name: Replace 'master' with ${{ github.event.client_payload.target-branch }} in .travis.yml
         run: |
           if [[ $main_checkout_status == "success" && -f ".travis.yml" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml"
-            grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "Attempting to replace 'master' with ${{ github.event.client_payload.target-branch }} in .travis.yml"
+            grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ github.event.client_payload.target-branch }}/g'
             echo "::set-env name=edit::true"
           else 
             echo "No .travis.yml file exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github
+      - name: Replace 'master' with ${{ github.event.client_payload.target-branch }} in ./.github
         run: | 
           if [[ $main_checkout_status == "success" && -d "./.github" ]];
           then           
-            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github/*.yml"
-            grep -lR "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "Attempting to replace 'master' with ${{ github.event.client_payload.target-branch }} in ./.github/*.yml"
+            grep -lR "master" ./.github | xargs sed -i 's/master/${{ github.event.client_payload.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.github directory exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity
+      - name: Replace 'master' with ${{ github.event.client_payload.target-branch }} in ./.teamcity
         run: | 
           if [[ $main_checkout_status == "success" &&  -d "./.teamcity" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity/*.yml"
-            grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "Attempting to replace 'master' with ${{ github.event.client_payload.target-branch }} in ./.teamcity/*.yml"
+            grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ github.event.client_payload.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.teamcity directory exists, so no changes required."
@@ -78,12 +78,12 @@ jobs:
         if: ${{ success() }}
         with:
           route: POST /repos/:owner/:repo/pulls
-          owner: ${{ needs.get-branch-name.outputs.owner }}
-          repo: ${{ needs.get-branch-name.outputs.repo }}
-          title: Update 'master' CI references to '${{ needs.get-branch-name.outputs.target-branch }}'
+          owner: ${{ github.event.client_payload.owner }}
+          repo: ${{ github.event.client_payload.repo }}
+          title: Update 'master' CI references to '${{ github.event.client_payload.target-branch }}'
           head: update-ci-references
-          base: ${{ needs.get-branch-name.outputs.target-branch }}
-          body: This PR aims to update all references from 'master' to '${{ needs.get-branch-name.outputs.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
+          base: ${{ github.event.client_payload.target-branch }}
+          body: This PR aims to update all references from 'master' to '${{ github.event.client_payload.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
           maintainer_can_modify: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
