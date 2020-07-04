@@ -34,19 +34,18 @@ jobs:
     runs-on: ubuntu-18.04
     needs: get-branch-name
     steps:
-      - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} branch exists
-        uses: octokit/request-action@v2.x
-        id: check_for_target
-        with:
-          # https://developer.github.com/v3/repos/branches/#get-a-branch
-          route: GET /repos/:owner/:repo/branches/:branch
-          owner: ${{ needs.get-branch-name.outputs.owner }}
-          repo: ${{ needs.get-branch-name.outputs.repo }}
-          branch: ${{ needs.get-branch-name.outputs.target-branch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
+      # - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} branch exists
+      #   uses: octokit/request-action@v2.x
+      #   id: check_for_target
+      #   with:
+      #     # https://developer.github.com/v3/repos/branches/#get-a-branch
+      #     route: GET /repos/:owner/:repo/branches/:branch
+      #     owner: ${{ needs.get-branch-name.outputs.owner }}
+      #     repo: ${{ needs.get-branch-name.outputs.repo }}
+      #     branch: ${{ needs.get-branch-name.outputs.target-branch }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
       - name: Checkout master
-        if: ${{ failure() }}
         uses: actions/checkout@v2
         with:
           repository: ${{ needs.get-branch-name.outputs.target-repo }}
