@@ -151,6 +151,21 @@ jobs:
             git checkout -b update-ci-references
             git push origin update-ci-references
           fi 
+      - name: Create PR on success 
+        uses: octokit/request-action@v2.x
+        id: create_pr
+        if: ${{ success() }}
+        with:
+          route: POST /repos/:owner/:repo/pulls
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
+          title: Update 'master' CI references to '${{ needs.get-branch-name.outputs.target-branch }}'
+          head: update-ci-references
+          base: ${{ needs.get-branch-name.outputs.target-branch }}
+          body: This PR aims to update all references from 'master' to '${{ needs.get-branch-name.outputs.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
+          maintainer_can_modify: 1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   # update-default-branch:
   #   name: Update default branch to ${{ needs.get-branch-name.outputs.target-branch }}
   #   runs-on: ubuntu-18.04
