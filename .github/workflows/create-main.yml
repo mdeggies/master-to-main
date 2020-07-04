@@ -104,7 +104,7 @@ jobs:
           if [ $main_checkout_status == "success" && -d "./.circleci" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.circleci/*.yml"
-            grep -lR --include \*.yml "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.circleci directory exists, so no changes required."
@@ -114,7 +114,7 @@ jobs:
           if [ $main_checkout_status == "success" && -f ".travis.yml" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml"
-            grep -lR --include \*.yml "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else 
             echo "No .travis.yml file exists, so no changes required."
@@ -124,7 +124,7 @@ jobs:
           if [ $main_checkout_status == "success" && -d "./.github" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github/*.yml"
-            grep -lR --include \*.yml "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            grep -lR "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.github directory exists, so no changes required."
@@ -134,7 +134,7 @@ jobs:
           if [ $main_checkout_status == "success" &&  -d "./.teamcity" ];
           then
             echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity/*.yml"
-            grep -lR --include \*.yml "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.teamcity directory exists, so no changes required."
