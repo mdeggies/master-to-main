@@ -37,7 +37,6 @@ jobs:
           branch: ${{ needs.get-branch-name.outputs.target-branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
-      - run: echo ${{ steps.check_for_target.outputs.status}}
       - name: Checkout ${{ needs.get-branch-name.outputs.target-branch }} branch if it exists
         if: ${{ success() }}
         uses: actions/checkout@v2
@@ -60,7 +59,7 @@ jobs:
             echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
           fi
   create-target-branch:
-    if: ${{ needs.check-for-target.outputs.status }} != 200
+    if: failure() | ${{ needs.check-for-target.outputs.status }} != 200
     name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch in target repo
     runs-on: ubuntu-18.04
     needs: [check-for-target, get-branch-name]
