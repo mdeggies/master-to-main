@@ -7,9 +7,9 @@ jobs:
     name: Update CI config
     runs-on: ubuntu-18.04
     steps:
-      - run: echo "TARGET REPO IS ${{ needs.get-branch-name.outputs.target-repo }}"
-      - run: echo "TARGET BRANCH IS ${{ needs.get-branch-name.outputs.target-branch }}"
-      - name: Checkout main branch with all history
+      - run: echo "TARGET REPO IS ${{ github.event.client_payload.release_url.target-repo }}"
+      - run: echo "TARGET BRANCH IS ${{ github.event.client_payload.release_url.target-branch }}"
+      - name: Checkout main branch with all historyeds.get-branch-name.outputs.target-branch
         uses: actions/checkout@v2
         with:
           repository: ${{ needs.get-branch-name.outputs.target-repo }}
