@@ -96,11 +96,9 @@ jobs:
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: ${{ needs.get-branch-name.outputs.target-branch }}
-      - run: |
-          if ${{ success() }};
-          then
-            echo "::set-env name=main_checkout_status::success"
-          fi
+      - name: Did checkokut succeed?
+        if: ${{ success() }}
+        run: echo "::set-env name=main_checkout_status::success"
       - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in the .circleci dir
         if: $main_checkout_status == "success"
         run: |
