@@ -25,6 +25,10 @@ jobs:
     name: Update CI
     runs-on: ubuntu-18.04
     steps:
+      - run: echo "target repo ${{ needs.prep-update-ci.outputs.target-repo }}"
+      - run: echo "target branch ${{ needs.prep-update-ci.outputs.target-branch }}"
+      - run: echo "owner ${{ needs.prep-update-ci.outputs.owner }}"
+      - run: echo "repo ${{ needs.prep-update-ci.outputs.repo }}"
       - name: Checkout main ${{ needs.prep-update-ci.outputs.target-branch }} with all history
         uses: actions/checkout@v2
         with:
