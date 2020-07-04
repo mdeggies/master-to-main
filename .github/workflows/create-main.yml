@@ -144,6 +144,8 @@ jobs:
           if [[ $main_checkout_status == "success" && $edit ]];
           then
             echo "Adding, committing, and pushing changes to branch 'update-ci-references'"
+            git config --global user.name "inclusive-language-bot"
+            git config --global user.email "inclusive-language-bot@hashicorp.com"
             git add .
             git commit -m "Updating CI references to master"
             git checkout -b update-ci-references
