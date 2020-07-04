@@ -16,7 +16,7 @@ jobs:
     - id: current_branch
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
     - id: target_repo
-      run: echo "##[set-output name=target-repo;]$(echo ${{ steps.current_branch.outputs.target-repo }} | awk -F "/" 'NR==1 {print $1/print $2}')"
+      run: echo "##[set-output name=target-repo;]$(echo ${{ steps.current_branch.outputs.branch }} | sed 's|\(.*\)/.*|\1|'')"
     - id: current_branch_owner
       run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
     - id: current_branch_repo
