@@ -140,7 +140,6 @@ jobs:
             echo "No ./.teamcity directory exists, so no changes required."
           fi
       - name: Add, commit, and push changes
-        if: $main_checkout_status == "success" && $edit
         run: |
           if [ $main_checkout_status == "success" && $edit ];
           then
