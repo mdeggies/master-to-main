@@ -1,0 +1,201 @@
+on:
+  push:
+    branches:
+      - '*/*/*'
+jobs:
+  get-branch-name:
+    name: Get branch name
+    runs-on: ubuntu-18.04
+    outputs:
+      branch: ${{ steps.current_branch.outputs.branch }}
+      owner: ${{ steps.current_branch_owner.outputs.owner }}
+      repo: ${{ steps.current_branch_repo.outputs.repo }}
+      target-branch: ${{ steps.current_branch_target.outputs.target-branch }}
+      target-repo: ${{ steps.target_repo.outputs.target-repo }}
+    steps:
+    - id: current_branch
+      # Get branch name (e.g. hashicorp/repo_name/main)
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+    - id: target_repo
+      # Get everything before last '/' (e.g. hashicorp/repo_name)
+      run: echo "##[set-output name=target-repo;]$(echo ${{ steps.current_branch.outputs.branch }} | sed 's|\(.*\)/.*|\1|')"
+    - id: current_branch_owner
+      # Get owner (e.g. hashicorp)
+      run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
+    - id: current_branch_repo
+      # Get target repo name '/' (e.g. repo_name)
+      run: echo "##[set-output name=repo;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $2}')"
+    - id: current_branch_target
+      # Get target branch (e.g. main)
+      run: echo "##[set-output name=target-branch;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $3}')"
+  check-for-target:
+    name: Check if ${{ needs.get-branch-name.outputs.target-branch }} branch exists
+    runs-on: ubuntu-18.04
+    needs: get-branch-name
+    steps:
+      - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} branch exists
+        uses: octokit/request-action@v2.x
+        id: check_for_target
+        with:
+          # https://developer.github.com/v3/repos/branches/#get-a-branch
+          route: GET /repos/:owner/:repo/branches/:branch
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
+          branch: ${{ needs.get-branch-name.outputs.target-branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
+      - name: Checkout ${{ needs.get-branch-name.outputs.target-branch }} branch if it exists
+        if: ${{ success() }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
+          token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: ${{ needs.get-branch-name.outputs.target-branch }}
+      - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} == master
+        if: ${{ success() }}
+        run: |
+          if ! git diff-index --quiet origin/master;
+          then
+            echo "${{ needs.get-branch-name.outputs.target-branch }} isn't equal to master.."
+            # Send slack alert -- ${{ needs.get-branch-name.outputs.target-branch }} already exists but != master, so manually check it out
+            # Or simply overwrite ${{ needs.get-branch-name.outputs.target-branch }}? 
+            exit 1
+          else
+            echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
+          fi
+  create-target-branch:
+    if: ${{ failure() }} || ${{ needs.check-for-target.outputs.status }} != 200
+    name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch in target repo
+    runs-on: ubuntu-18.04
+    needs: [check-for-target, get-branch-name]
+    steps:
+      - name: Checkout master with all history on the target repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
+          token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: 'master'
+      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch
+        run: git branch -m master ${{ needs.get-branch-name.outputs.target-branch }}
+      - name: Push ${{ needs.get-branch-name.outputs.target-branch }} branch
+        run: git push -u origin ${{ needs.get-branch-name.outputs.target-branch }}
+  update-ci-config:
+    name: Update CI config
+    runs-on: ubuntu-18.04
+    needs: get-branch-name
+    steps:
+      - name: Checkout main branch with all history
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
+          token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: ${{ needs.get-branch-name.outputs.target-branch }}
+      - name: Did checkout succeed?
+        if: ${{ success() }}
+        run: echo "::set-env name=main_checkout_status::success"
+      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in the .circleci dir
+        run: |
+          if [[ $main_checkout_status == "success" && -d "./.circleci" ]];
+          then
+            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.circleci/*.yml"
+            grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
+          else
+            echo "No ./.circleci directory exists, so no changes required."
+          fi
+      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml
+        run: |
+          if [[ $main_checkout_status == "success" && -f ".travis.yml" ]];
+          then
+            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in .travis.yml"
+            grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
+          else 
+            echo "No .travis.yml file exists, so no changes required."
+          fi
+      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github
+        run: | 
+          if [[ $main_checkout_status == "success" && -d "./.github" ]];
+          then
+            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.github/*.yml"
+            grep -lR "master" ./.github | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
+          else
+            echo "No ./.github directory exists, so no changes required."
+          fi
+      - name: Replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity
+        run: | 
+          if [[ $main_checkout_status == "success" &&  -d "./.teamcity" ]];
+          then
+            echo "Attempting to replace 'master' with ${{ needs.get-branch-name.outputs.target-branch }} in ./.teamcity/*.yml"
+            grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ needs.get-branch-name.outputs.target-branch }}/g'
+            echo "::set-env name=edit::true"
+          else
+            echo "No ./.teamcity directory exists, so no changes required."
+          fi
+      - name: Add, commit, and force push changes
+        run: |
+          if [[ $main_checkout_status == "success" && $edit ]];
+          then
+            echo "Adding, committing, and pushing changes to branch 'update-ci-references'"
+            git config --global user.name "inclusive-language-bot"
+            git config --global user.email "inclusive-language-bot@hashicorp.com"
+            git add .
+            git commit -m "Updating CI references to master"
+            git checkout -b update-ci-references
+            git push origin update-ci-references -f
+          fi 
+      - name: Create PR on success 
+        uses: octokit/request-action@v2.x
+        id: create_pr
+        if: ${{ success() }}
+        with:
+          route: POST /repos/:owner/:repo/pulls
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
+          title: Update 'master' CI references to '${{ needs.get-branch-name.outputs.target-branch }}'
+          head: update-ci-references
+          base: ${{ needs.get-branch-name.outputs.target-branch }}
+          body: This PR aims to update all references from 'master' to '${{ needs.get-branch-name.outputs.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
+          maintainer_can_modify: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Call update-ci.yml workflow
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: mdeggies/master-to-main
+          event-type: trigger-update-ci-workflow
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+  # update-default-branch:
+  #   name: Update default branch to ${{ needs.get-branch-name.outputs.target-branch }}
+  #   runs-on: ubuntu-18.04
+  #   needs: get-branch-name
+  #   steps:
+  #     - name: Update the default branch to ${{ needs.get-branch-name.outputs.target-branch }}
+  #       uses: octokit/request-action@v2.x
+  #       id: update_default_branch
+  #       with:
+  #         route: PATCH /repos/:owner/:repo
+  #         owner: ${{ needs.get-branch-name.outputs.owner }}
+  #         repo: ${{ needs.get-branch-name.outputs.repo }}
+  #         default_branch: ${{ needs.get-branch-name.outputs.target-branch }}
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  # update-pr-target:
+  #   name: Update the base branch for all open PR's
+  #   runs-on: ubuntu-18.04
+  #   needs: [get-branch-name, update-default-branch]
+  #   steps:
+  #     - name: Checkout current repo
+  #       uses: actions/checkout@v2
+  #     - name: Install dependencies
+  #       run: pip install requests PyGithub
+  #     - name: Update target branch of open PR's from 'master' to ${{ needs.get-branch-name.outputs.target-branch }}
+  #       run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }} ${{ needs.get-branch-name.outputs.target-branch }}
