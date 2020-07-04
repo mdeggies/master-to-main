@@ -11,10 +11,12 @@ jobs:
       owner: ${{ steps.current_branch_owner.outputs.owner }}
       repo: ${{ steps.current_branch_repo.outputs.repo }}
       target-branch: ${{ steps.current_branch_target.outputs.target-branch }}
+      target-repo: ${{ steps.target_repo.outputs.target-branch }}
     steps:
     - id: current_branch
-      shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+    - id: target_repo
+      run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1/print $2}')"
     - id: current_branch_owner
       run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
     - id: current_branch_repo
@@ -41,7 +43,7 @@ jobs:
         if: ${{ success() }}
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.get-branch-name.outputs.branch }}
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -59,7 +61,7 @@ jobs:
             echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
           fi
   create-target-branch:
-    if: failure() || ${{ needs.check-for-target.outputs.status }} != 200
+    if: ${{ failure() }} || ${{ needs.check-for-target.outputs.status }} != 200
     name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch in target repo
     runs-on: ubuntu-18.04
     needs: [check-for-target, get-branch-name]
@@ -67,7 +69,7 @@ jobs:
       - name: Checkout master with all history on the target repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.get-branch-name.outputs.branch }}
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
@@ -76,8 +78,6 @@ jobs:
         run: git branch -m master ${{ needs.get-branch-name.outputs.target-branch }}
       - name: Push ${{ needs.get-branch-name.outputs.target-branch }} branch
         run: git push -u origin ${{ needs.get-branch-name.outputs.target-branch }}
-
-
   update-ci-config:
     name: Update CI config
     runs-on: ubuntu-18.04
@@ -86,7 +86,7 @@ jobs:
       - name: Checkout main branch with all history
         uses: actions/checkout@v2
         with:
-          repository: ${{ needs.get-branch-name.outputs.branch }}
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
