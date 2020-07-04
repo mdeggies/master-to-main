@@ -7,6 +7,8 @@ jobs:
     name: Update CI config
     runs-on: ubuntu-18.04
     steps:
+      - run: echo "TARGET REPO IS ${{ needs.get-branch-name.outputs.target-repo }}"
+      - run: echo "TARGET BRANCH IS ${{ needs.get-branch-name.outputs.target-branch }}"
       - name: Checkout main branch with all history
         uses: actions/checkout@v2
         with:
@@ -68,7 +70,7 @@ jobs:
             git add .
             git commit -m "Updating CI references to master"
             git checkout -b update-ci-references
-            git push origin update-ci-references -f
+            git push origin update-ci-references 
           fi 
       - name: Create PR on success 
         uses: octokit/request-action@v2.x
