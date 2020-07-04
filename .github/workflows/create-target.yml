@@ -93,5 +93,5 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           repository: mdeggies/master-to-main
           event-type: trigger-update-ci-workflow
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "target_repo": ${{ needs.get-branch-name.outputs.target-repo }}, "target_branch": ${{ needs.get-branch-name.outputs.target-branch }} }'
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "target_repo": "${{ needs.get-branch-name.outputs.target-repo }}", "target_branch": "${{ needs.get-branch-name.outputs.target-branch }}" }'
   
