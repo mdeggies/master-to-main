@@ -166,6 +166,13 @@ jobs:
           maintainer_can_modify: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Call update-ci.yml workflow
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: mdeggies/master-to-main
+          event-type: trigger-update-ci-workflow
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
   # update-default-branch:
   #   name: Update default branch to ${{ needs.get-branch-name.outputs.target-branch }}
   #   runs-on: ubuntu-18.04
