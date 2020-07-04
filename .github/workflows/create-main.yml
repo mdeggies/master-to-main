@@ -59,7 +59,7 @@ jobs:
             echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
           fi
   create-target-branch:
-    if: failure() | ${{ needs.check-for-target.outputs.status }} != 200
+    if: failure() || ${{ needs.check-for-target.outputs.status }} != 200
     name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch in target repo
     runs-on: ubuntu-18.04
     needs: [check-for-target, get-branch-name]
