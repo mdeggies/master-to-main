@@ -1,0 +1,16 @@
+on:
+  push:
+    branches:
+      - '*/*/*'
+jobs:
+  update-pr-target:
+    name: Update the base branch for all open PR's
+    runs-on: ubuntu-18.04
+    needs: [get-branch-name, update-default-branch]
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install requests PyGithub
+      - name: Update target branch of open PR's from 'master' to ${{ needs.get-branch-name.outputs.target-branch }}
+        run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }} ${{ needs.get-branch-name.outputs.target-branch }}

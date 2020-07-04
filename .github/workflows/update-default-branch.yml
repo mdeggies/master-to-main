@@ -1,0 +1,20 @@
+on:
+  push:
+    branches:
+      - '*/*/*'
+jobs:
+  update-default-branch:
+    name: Update default branch to ${{ needs.get-branch-name.outputs.target-branch }}
+    runs-on: ubuntu-18.04
+    needs: get-branch-name
+    steps:
+      - name: Update the default branch to ${{ needs.get-branch-name.outputs.target-branch }}
+        uses: octokit/request-action@v2.x
+        id: update_default_branch
+        with:
+          route: PATCH /repos/:owner/:repo
+          owner: ${{ needs.get-branch-name.outputs.owner }}
+          repo: ${{ needs.get-branch-name.outputs.repo }}
+          default_branch: ${{ needs.get-branch-name.outputs.target-branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
