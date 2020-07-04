@@ -14,14 +14,19 @@ jobs:
       target-repo: ${{ steps.target_repo.outputs.target-repo }}
     steps:
     - id: current_branch
+      # Get branch name (e.g. hashicorp/repo_name/main)
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
     - id: target_repo
-      run: echo "##[set-output name=target-repo;]$(echo ${{ steps.current_branch.outputs.branch }} | sed 's|\(.*\)/.*|\1|'')"
+      # Get everything before last '/' (e.g. hashicorp/repo_name)
+      run: echo "##[set-output name=target-repo;]$(echo ${{ steps.current_branch.outputs.branch }} | sed 's|\(.*\)/.*|\1|')"
     - id: current_branch_owner
+      # Get owner (e.g. hashicorp)
       run: echo "##[set-output name=owner;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $1}')"
     - id: current_branch_repo
+      # Get target repo name '/' (e.g. repo_name)
       run: echo "##[set-output name=repo;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $2}')"
     - id: current_branch_target
+      # Get target branch (e.g. main)
       run: echo "##[set-output name=target-branch;]$(echo ${{ steps.current_branch.outputs.branch }} | awk -F "/" 'NR==1 {print $3}')"
   check-for-target:
     name: Check if ${{ needs.get-branch-name.outputs.target-branch }} branch exists
