@@ -5,7 +5,7 @@ jobs:
   update-ci-config:
     name: Update CI config
     runs-on: ubuntu-18.04
-    needs: get-branch-name
+    needs: [get-branch-name, create-target-branch]
     steps:
       - name: Checkout main branch with all history
         uses: actions/checkout@v2

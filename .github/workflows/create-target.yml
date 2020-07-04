@@ -44,8 +44,29 @@ jobs:
           branch: ${{ needs.get-branch-name.outputs.target-branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
-      - name: Checkout ${{ needs.get-branch-name.outputs.target-branch }} branch if it exists
-        if: ${{ success() }}
+      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch
+        if: ${{ failure() }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.get-branch-name.outputs.target-repo }}
+          token: ${{ secrets.GH_TOKEN }}
+          # Number of commits to fetch. 0 indicates all history.
+          fetch-depth: 0
+          ref: 'master'
+        run: echo "##[set-output name=create_target;]$(echo True }}
+      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch
+        run: |
+          if [[ $create_target ]];
+          then 
+            git branch -m master ${{ needs.get-branch-name.outputs.target-branch }}
+          fi
+      - name: Push ${{ needs.get-branch-name.outputs.target-branch }} branch
+        run: |
+          if [[ $create_target ]];
+          then 
+            git push -u origin ${{ needs.get-branch-name.outputs.target-branch }}
+          fi
+      - name: Checkout ${{ needs.get-branch-name.outputs.target-branch }} branch
         uses: actions/checkout@v2
         with:
           repository: ${{ needs.get-branch-name.outputs.target-repo }}
@@ -65,28 +86,10 @@ jobs:
           else
             echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
           fi
-  create-target-branch:
-    if: ${{ failure() }} || ${{ needs.check-for-target.outputs.status }} != 200
-    name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch in target repo
-    runs-on: ubuntu-18.04
-    needs: [check-for-target, get-branch-name]
-    steps:
-      - name: Checkout master with all history on the target repo
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ needs.get-branch-name.outputs.target-repo }}
-          token: ${{ secrets.GH_TOKEN }}
-          # Number of commits to fetch. 0 indicates all history.
-          fetch-depth: 0
-          ref: 'master'
-      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch
-        run: git branch -m master ${{ needs.get-branch-name.outputs.target-branch }}
-      - name: Push ${{ needs.get-branch-name.outputs.target-branch }} branch
-        run: git push -u origin ${{ needs.get-branch-name.outputs.target-branch }}
   update-ci-config:
     name: Update CI config
     runs-on: ubuntu-18.04
-    needs: get-branch-name
+    needs: [get-branch-name, create-target-branch]
     steps:
       - name: Checkout main branch with all history
         uses: actions/checkout@v2
@@ -173,29 +176,4 @@ jobs:
           repository: mdeggies/master-to-main
           event-type: trigger-update-ci-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
-  # update-default-branch:
-  #   name: Update default branch to ${{ needs.get-branch-name.outputs.target-branch }}
-  #   runs-on: ubuntu-18.04
-  #   needs: get-branch-name
-  #   steps:
-  #     - name: Update the default branch to ${{ needs.get-branch-name.outputs.target-branch }}
-  #       uses: octokit/request-action@v2.x
-  #       id: update_default_branch
-  #       with:
-  #         route: PATCH /repos/:owner/:repo
-  #         owner: ${{ needs.get-branch-name.outputs.owner }}
-  #         repo: ${{ needs.get-branch-name.outputs.repo }}
-  #         default_branch: ${{ needs.get-branch-name.outputs.target-branch }}
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  # update-pr-target:
-  #   name: Update the base branch for all open PR's
-  #   runs-on: ubuntu-18.04
-  #   needs: [get-branch-name, update-default-branch]
-  #   steps:
-  #     - name: Checkout current repo
-  #       uses: actions/checkout@v2
-  #     - name: Install dependencies
-  #       run: pip install requests PyGithub
-  #     - name: Update target branch of open PR's from 'master' to ${{ needs.get-branch-name.outputs.target-branch }}
-  #       run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }} ${{ needs.get-branch-name.outputs.target-branch }}
+  
