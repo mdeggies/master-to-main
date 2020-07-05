@@ -7,20 +7,22 @@ jobs:
     name: Prepare to update CI config
     runs-on: ubuntu-18.04
     outputs:
-      owner: ${{ steps.inputs.outputs.owner }}
-      repo: ${{ steps.inputs.outputs.repo }}
-      target-branch: ${{ steps.inputs.outputs.target-branch }}
-      target-repo: ${{ steps.inputs.outputs.target-repo }}
+      owner: ${{ steps.owner.outputs.owner }}
+      repo: ${{ steps.repo.outputs.repo }}
+      target-branch: ${{ steps.target_branch.outputs.target-branch }}
+      target-repo: ${{ steps.target_repo.outputs.target-repo }}
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.client_payload.ref }}
-      - id: inputs
-        run: |
-          echo "##[set-output name=owner;]$(echo ${{ github.event.client_payload.owner }})"
-          echo "##[set-output name=repo;]$(echo ${{ github.event.client_payload.repo }})"
-          echo "##[set-output name=target-branch;]$(echo ${{ github.event.client_payload.target_branch }})"
-          echo "##[set-output name=target-repo;]$(echo ${{ github.event.client_payload.target_repo }})"
+      - id: owner
+        run: echo "##[set-output name=owner;]$(echo ${{ github.event.client_payload.owner }})"
+      - id: repo
+        run: echo "##[set-output name=repo;]$(echo ${{ github.event.client_payload.repo }})"
+      - id: target_branch
+        run: echo "##[set-output name=target-branch;]$(echo ${{ github.event.client_payload.target_branch }})"
+      - id: target_repo
+        run: echo "##[set-output name=target-repo;]$(echo ${{ github.event.client_payload.target_repo }})"
   update-ci:
     name: Update CI
     runs-on: ubuntu-18.04
