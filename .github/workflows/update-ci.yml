@@ -26,6 +26,7 @@ jobs:
   update-ci:
     name: Update CI
     runs-on: ubuntu-18.04
+    needs: prep-update-ci
     steps:
       - run: echo "target repo ${{ needs.prep-update-ci.outputs.target-repo }}"
       - run: echo "target branch ${{ needs.prep-update-ci.outputs.target-branch }}"
