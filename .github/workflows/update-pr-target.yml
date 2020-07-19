@@ -2,7 +2,7 @@ on:
   push:
     branches:
       - '*/*/*'
-      - '!master'
+      - '!main'
 
 jobs:
   hello:
@@ -19,5 +19,5 @@ jobs:
   #       uses: actions/checkout@v2
   #     - name: Install dependencies
   #       run: pip install requests PyGithub
-  #     - name: Update target branch of open PR's from 'master' to ${{ needs.get-branch-name.outputs.target-branch }}
+  #     - name: Update target branch of open PR's from 'main' to ${{ needs.get-branch-name.outputs.target-branch }}
   #       run: python ./scripts/update_pr_target_branch.py ${{ secrets.GH_TOKEN }} ${{ needs.get-branch-name.outputs.owner }} ${{ needs.get-branch-name.outputs.repo }} ${{ needs.get-branch-name.outputs.target-branch }}
