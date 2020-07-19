@@ -43,42 +43,42 @@ jobs:
       - name: Did checkout succeed?
         if: ${{ success() }}
         run: echo "::set-env name=main_checkout_status::success"
-      - name: Replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in the .circleci dir
+      - name: Replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in the .circleci dir
         run: |
           if [[ $main_checkout_status == "success" && -d "./.circleci" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.circleci/*.yml"
-            grep -lR "master" ./.circleci | xargs sed -i 's/master/${{ needs.prep-update-ci.outputs.target-branch }}/g'
+            echo "Attempting to replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.circleci/*.yml"
+            grep -lR "main" ./.circleci | xargs sed -i 's/main/${{ needs.prep-update-ci.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.circleci directory exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in .travis.yml
+      - name: Replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in .travis.yml
         run: |
           if [[ $main_checkout_status == "success" && -f ".travis.yml" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in .travis.yml"
-            grep -lR "master" .travis.yml | xargs sed -i 's/master/${{ needs.prep-update-ci.outputs.target-branch }}/g'
+            echo "Attempting to replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in .travis.yml"
+            grep -lR "main" .travis.yml | xargs sed -i 's/main/${{ needs.prep-update-ci.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else 
             echo "No .travis.yml file exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.github
+      - name: Replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.github
         run: | 
           if [[ $main_checkout_status == "success" && -d "./.github" ]];
           then           
-            echo "Attempting to replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.github/*.yml"
-            grep -lR "master" ./.github | xargs sed -i 's/master/${{ needs.prep-update-ci.outputs.target-branch }}/g'
+            echo "Attempting to replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.github/*.yml"
+            grep -lR "main" ./.github | xargs sed -i 's/main/${{ needs.prep-update-ci.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.github directory exists, so no changes required."
           fi
-      - name: Replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.teamcity
+      - name: Replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.teamcity
         run: | 
           if [[ $main_checkout_status == "success" &&  -d "./.teamcity" ]];
           then
-            echo "Attempting to replace 'master' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.teamcity/*.yml"
-            grep -lR "master" ./.teamcity | xargs sed -i 's/master/${{ needs.prep-update-ci.outputs.target-branch }}/g'
+            echo "Attempting to replace 'main' with ${{ needs.prep-update-ci.outputs.target-branch }} in ./.teamcity/*.yml"
+            grep -lR "main" ./.teamcity | xargs sed -i 's/main/${{ needs.prep-update-ci.outputs.target-branch }}/g'
             echo "::set-env name=edit::true"
           else
             echo "No ./.teamcity directory exists, so no changes required."
@@ -91,7 +91,7 @@ jobs:
             git config --global user.name "inclusive-language-bot"
             git config --global user.email "inclusive-language-bot@hashicorp.com"
             git add .
-            git commit -m "Updating CI references to master"
+            git commit -m "Updating CI references to main"
             git checkout -b update-ci-references
             git push origin update-ci-references 
           fi 
@@ -103,10 +103,10 @@ jobs:
           route: POST /repos/:owner/:repo/pulls
           owner: ${{ needs.prep-update-ci.outputs.owner }}
           repo: ${{ needs.prep-update-ci.outputs.repo }}
-          title: Update 'master' CI references to '${{ needs.prep-update-ci.outputs.target-branch }}'
+          title: Update 'main' CI references to '${{ needs.prep-update-ci.outputs.target-branch }}'
           head: update-ci-references
           base: ${{ needs.prep-update-ci.outputs.target-branch }}
-          body: This PR aims to update all references from 'master' to '${{ needs.prep-update-ci.outputs.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
+          body: This PR aims to update all references from 'main' to '${{ needs.prep-update-ci.outputs.target-branch }}' in every CI file in this repo. *NOTE* This PR was generated automatically, so please take a close look before approving and merging! 
           maintainer_can_modify: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

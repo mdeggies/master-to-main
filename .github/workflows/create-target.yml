@@ -2,7 +2,7 @@ on:
   push:
     branches:
       - '*/*/*'
-      - '!master'
+      - '!main'
       
 jobs:
   get-branch-name:
@@ -45,21 +45,21 @@ jobs:
       #     branch: ${{ needs.get-branch-name.outputs.target-branch }}
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v2
         with:
           repository: ${{ needs.get-branch-name.outputs.target-repo }}
           token: ${{ secrets.GH_TOKEN }}
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
-          ref: 'master'
-      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch off master
+          ref: 'main'
+      - name: Create ${{ needs.get-branch-name.outputs.target-branch }} branch off main
         if: ${{ success() }}
-        run: git branch -m master ${{ needs.get-branch-name.outputs.target-branch }}
+        run: git branch -m main ${{ needs.get-branch-name.outputs.target-branch }}
       - name: Push ${{ needs.get-branch-name.outputs.target-branch }} branch
         if: ${{ success() }}
         run: git push -u origin ${{ needs.get-branch-name.outputs.target-branch }}
-  check-target-equals-master:
+  check-target-equals-main:
     runs-on: ubuntu-18.04
     needs: [get-branch-name, check-for-target]
     steps:
@@ -71,26 +71,26 @@ jobs:
           # Number of commits to fetch. 0 indicates all history.
           fetch-depth: 0
           ref: ${{ needs.get-branch-name.outputs.target-branch }}
-      - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} == master
+      - name: Check if ${{ needs.get-branch-name.outputs.target-branch }} == main
         if: ${{ success() }}
         run: |
-          if ! git diff-index --quiet origin/master;
+          if ! git diff-index --quiet origin/main;
           then
-            echo "${{ needs.get-branch-name.outputs.target-branch }} isn't equal to master.."
-            # Send slack alert -- ${{ needs.get-branch-name.outputs.target-branch }} already exists but != master, so manually check it out
+            echo "${{ needs.get-branch-name.outputs.target-branch }} isn't equal to main.."
+            # Send slack alert -- ${{ needs.get-branch-name.outputs.target-branch }} already exists but != main, so manually check it out
             # Or simply overwrite ${{ needs.get-branch-name.outputs.target-branch }}? 
             exit 1
           else
-            echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to master.. skip create-main-branch job"
+            echo "${{ needs.get-branch-name.outputs.target-branch }} exists and is equal to main.. skip create-main-branch job"
           fi
   call-update-ci:
     runs-on: ubuntu-18.04
-    needs: [get-branch-name, check-for-target, check-target-equals-master]
+    needs: [get-branch-name, check-for-target, check-target-equals-main]
     steps:
       - name: Call update-ci.yml workflow
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.GH_TOKEN }}
-          repository: mdeggies/master-to-main
+          repository: mdeggies/main-to-main
           event-type: trigger-update-ci-workflow
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "target_repo": "${{ needs.get-branch-name.outputs.target-repo }}", "target_branch": "${{ needs.get-branch-name.outputs.target-branch }}", "owner": "${{ needs.get-branch-name.outputs.owner }}", "repo": "${{ needs.get-branch-name.outputs.repo }}"   }'
